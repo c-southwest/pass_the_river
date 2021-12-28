@@ -1,0 +1,39 @@
+﻿<h3>通关秘诀：</h3>
+<button class="btn btn-primary mb-2" @onclick="Answer">点击查看通关秘诀</button>
+@if (answer)
+    @foreach (var item in ans)
+    {
+        @if (item.Contains("运出"))
+        {
+            <p class="text-danger">@item</p>
+        }
+        else
+        {
+            <p>@item</p>
+        }
+    }
+
+@code {
+    [Parameter]
+    public int n_good { get; set; }
+
+    [Parameter]
+    public int n_bad { get; set; }
+
+    [Parameter]
+    public int volume { get; set; }
+
+    [Parameter]
+    public bool answer { get; set; }
+
+    List<string> ans = new List<string>();
+
+    void Answer()
+    {
+        answer = true;
+        var solution = new Game.Data.Solution(n_good, n_bad, volume);
+        ans = solution.GetSolution();
+    }
+
+}
+

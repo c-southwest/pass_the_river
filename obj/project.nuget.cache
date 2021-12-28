@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "75k8tiMudbzQmDhjE6E0eSKuODp0EptkJqZl3dRW86vNf4HLJXjUIFJKWoAlnQTeqnZl4aYpdjDhJyuD3RZQnA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\dada\\Desktop\\Game\\Game.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\dada\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.10.13\\microsoft.visualstudio.azure.containers.tools.targets.1.10.13.nupkg.sha512"
+  ],
+  "logs": []
+}

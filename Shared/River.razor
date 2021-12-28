@@ -1,0 +1,296 @@
+﻿
+<div class="container">
+    @* Side A *@
+    <div class="row">
+        <div class="col">
+            <div class="row justify-content-end">
+                @foreach (var k in roles_A.Where((x) => x.role == "K"))
+                {
+                    <div class="col-4 p-0">
+                        <img src=@k.image @onclick="()=>A_ON(k)" class="w-75 h-auto" alt="Alternate Text" />
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col">
+            <div class="row">
+                @foreach (var g in roles_A.Where((x) => x.role == "G"))
+                {
+                    <div class="col-4 p-0">
+                        <img src=@g.image @onclick="()=>A_ON(g)" class="w-75 h-auto" alt="Alternate Text" />
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* River *@
+    <div class="row mt-2 mb-2 align-items-center" style="background-color:aqua;height:400px; width:auto">
+        <div class="col-10 d-flex justify-content-center align-items-center">
+            @if (fail)
+            {
+                <h1 class="text-danger">游戏失败！</h1>
+            }
+            @if (success)
+            {
+                <h1 class="text-danger display-3">成功！</h1>
+
+            }
+
+            @foreach (var r in boat)
+            {
+                <div class="col-4 p-0">
+                    <img src=@r.image @onclick="()=>Cancel(r)" class="w-75 h-auto" alt="Alternate Text" />
+                </div>
+            }
+        </div>
+        <div class="col-2 h-100 mt-2">
+            <div class="row h-100">
+                <button class="btn btn-secondary btn-lg mb-2 @drive" @onclick="()=>Drive()">开船</button>
+                <button class="btn btn-success btn-lg mb-2 @replay" @onclick="()=>Replay()">再玩一次</button>
+                @if (success & n < 6)
+                {
+                    <button class="btn btn-warning btn-lg mb-2 align-self-center" @onclick="()=>Next()">下一关</button>
+                }
+                @if (no_more)
+                {
+                    <button class="btn btn-danger btn-lg mb-2 align-self-center" data-bs-toggle="modal" data-bs-target="#staticBackdrop">你已通关！</button>
+                    <!-- Modal -->
+                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="staticBackdropLabel">恭喜！</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <h1>你已经成功通过所有关卡</h1>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">确定</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+
+    @* Side B *@
+    <div class="row">
+        <div class="col">
+            <div class="row justify-content-end">
+                @foreach (var k in roles_B.Where((x) => x.role == "K"))
+                {
+                    <div class="col-4 p-0">
+                        <img src=@k.image @onclick="()=>B_ON(k)" class="w-75 h-auto" alt="Alternate Text" />
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col">
+            <div class="row">
+                @foreach (var g in roles_B.Where((x) => x.role == "G"))
+                {
+                    <div class="col-4 p-0">
+                        <img src=@g.image @onclick="()=>B_ON(g)" class="w-75 h-auto" alt="Alternate Text" />
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<footer>
+    <h2>   游戏规则：</h2>
+    <h3>左边的角色是商人，右边的角色是仆从。他们都要坐船到河的对岸去，第一关船一次只能坐2人，其他关的船可以坐3人。</h3>
+    <h3 class="text-danger">注意：如果岸上的仆从人数比商人多，那么商人就会被仆从杀害！</h3>
+</footer>
+<div>
+    <Solution n_good="n" n_bad="(n==6)?5:n" volume="n>3?3:2" answer="answer"></Solution>
+</div>
+
+
+@code{
+    [Parameter]
+    public int n { get; set; }
+    List<Role> roles_A;
+    List<Role> roles_B;
+    List<Role> boat;
+    Position pos = Position.sideA;
+    string drive = "align-self-start";
+    string replay = "d-none";
+    bool fail = false;
+    bool success = false;
+    bool no_more = false;
+
+    bool answer = false;
+    public enum Position
+    {
+        sideA,
+        sideB
+    }
+    protected override void OnInitialized()
+    {
+        string img_K = "img/Kai.png";
+        string img_G = "img/Gong.png";
+        roles_A = new List<Role>();
+        // Kai
+        for (int i = 0; i < n; i++)
+        {
+            roles_A.Add(new Role() { id = i, role = "K", image = img_K, visible = true });
+        }
+
+        // Gong
+        int tmp = (n == 6) ? 5 : n;
+        for (int i = 0; i < tmp; i++)
+        {
+            roles_A.Add(new Role() { id = i, role = "G", image = img_G, visible = true });
+
+        }
+
+        // Boat
+        boat = new List<Role>();
+
+        // Other side
+        roles_B = new List<Role>();
+    }
+    public void A_ON(Role r)
+    {
+        if (pos == Position.sideB)
+        {
+            return;
+        }
+        if (boat.Count == (n > 3 ? 3 : 2))
+        {
+            return;
+        }
+        if (roles_A.Remove(r))
+        {
+            boat.Add(r);
+        }
+    }
+
+    public void B_ON(Role r)
+    {
+        if (pos == Position.sideA)
+        {
+            return;
+        }
+        if (boat.Count == (n > 3 ? 3 : 2))
+        {
+            return;
+        }
+        if (roles_B.Remove(r))
+        {
+            boat.Add(r);
+        }
+    }
+
+    public void Cancel(Role r)
+    {
+        if (boat.Remove(r))
+        {
+            if (pos == Position.sideA)
+            {
+                roles_A.Add(r);
+            }
+            else
+            {
+                roles_B.Add(r);
+            }
+        }
+    }
+
+    public void Drive()
+    {
+        if (boat.Count == 0)
+        {
+            return;
+        }
+
+        if (pos == Position.sideA)
+        {
+            foreach (var r in boat)
+            {
+                roles_B.Add(r);
+            }
+            pos = Position.sideB;
+        }
+        else
+        {
+            foreach (var r in boat)
+            {
+                roles_A.Add(r);
+            }
+            pos = Position.sideA;
+        }
+
+        boat.Clear();
+        drive = pos == Position.sideA ? "align-self-start" : "align-self-end";
+        if (isFail())
+        {
+            fail = true;
+            drive = "d-none";
+            replay = "align-self-center";
+        }
+        if (roles_A.Count == 0)
+        {
+            success = true;
+            drive = "d-none";
+            replay = "align-self-center";
+            if (n == 6)
+            {
+                no_more = true;
+            }
+        }
+    }
+
+    private bool isFail()
+    {
+        // Side A
+        if (roles_A.Where((x) => x.role == "K").Count() < roles_A.Where((x) => x.role == "G").Count())
+        {
+            if (roles_A.Where((x) => x.role == "K").Count() != 0)
+            {
+                return true;
+            }
+        }
+        // Side B
+        if (roles_B.Where((x) => x.role == "K").Count() < roles_B.Where((x) => x.role == "G").Count())
+        {
+            if (roles_B.Where((x) => x.role == "K").Count() != 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void Replay()
+    {
+        OnInitialized();
+
+        pos = Position.sideA;
+        drive = "align-self-start";
+        replay = "d-none";
+        fail = false;
+        success = false;
+        no_more = false;
+
+        answer = false;
+    }
+
+    public void Next()
+    {
+        if (n < 6)
+        {
+            n++;
+            Replay();
+        }
+        else
+        {
+
+        }
+    }
+}
